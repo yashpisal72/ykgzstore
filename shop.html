@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/x-icon" href="bgbag.webp">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YKGZ STORE - Shop Now</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #070707, #f9f7f7);
+            color: #333;
+        }
+
+        /* Header */
+        header {
+            background-color: #0d0d0e;
+            color: rgb(253, 134, 31);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            flex-wrap: wrap;
+            
+        }
+
+        header h1 {
+            flex: 1;
+            text-align: center;
+            margin: 0;
+            font-size: 2rem;
+            padding: 0 1rem;
+        }
+
+        /* Left and Right Sections */
+        header .left-section,
+        header .right-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        header .left-section button,
+        header .right-section button,
+        header input[type="search"] {
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            padding: 0.5rem 2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        header .left-section button:hover,
+        header .right-section button:hover {
+            background-color: #0410ff;
+        }
+
+        header input[type="search"] {
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            min-width: 200px;
+        }
+
+        /* Main Content */
+        main {
+            padding: 6rem 1rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .product-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            background-color: #fff;
+            text-align: center;
+            width: 100%;
+            max-width: 280px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .product-card:hover {
+            transform: scale(1.05);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .product-card .details h3 {
+            font-size: 1.2rem;
+            margin: 0.5rem 0;
+        }
+
+        .product-card .details .original-price {
+            text-decoration: line-through;
+            color: #888;
+            font-size: 1rem;
+        }
+
+        .product-card .details .discounted-price {
+            color: #ff5722;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        /* Footer Section */
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 1rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Media Queries */
+        @media (max-width: 1024px) {
+            main {
+                justify-content: space-evenly;
+            }
+
+            .product-card {
+                width: 48%; /* Display 2 products per row */
+            }
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            header .left-section button,
+            header .right-section button {
+                padding: 0.4rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            header input[type="search"] {
+                font-size: 0.9rem;
+                min-width: 150px;
+            }
+
+            .product-card img {
+                height: 150px;
+            }
+
+            .product-card .details h3 {
+                font-size: 1rem;
+            }
+
+            .product-card .details .discounted-price {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header {
+                flex-wrap: wrap;
+                padding: 0.5rem;
+            }
+
+            header h1 {
+                font-size: 1.2rem;
+                margin-bottom: 0.5rem;
+            }
+
+            header .left-section,
+            header .right-section {
+                width: 100%;
+                justify-content: space-between;
+                margin-bottom: 0.5rem;
+            }
+
+            header input[type="search"] {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            .product-card {
+                width: 48%; /* Reduced width for mobile to display two products */
+                padding: 0.5rem;
+                margin: 0.5rem 0; /* Added margin between product cards */
+            }
+
+            .product-card img {
+                height: 120px;
+            }
+
+            .product-card .details h3 {
+                font-size: 1rem;
+            }
+
+            .product-card .details .discounted-price {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="left-section">
+            <a href="signup.html">
+                <button>Login & Signup</button>
+            </a>
+            <a href="cart.html">
+                <button id="view-cart-button">Cart (<span id="cart-count">0</span>)</button>
+            </a>
+            <a href="groceries.html">
+                <button>Groceries</button>
+            </a>
+           
+        </div>
+        <h1>YKGZ STORE</h1>
+        <div class="right-section">
+            <input type="search" placeholder="Search for products..." id="search-bar">
+            <a href="account.html"><button>Account</button></a>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main id="product-list"></main>
+
+    <!-- Footer Section -->
+    <footer>
+        Many new products will be added soon!
+    </footer>
+
+    <script>
+        // Customizable Product List
+        const products = [
+            { 
+                id: 1, 
+                name: "Air Jordans", 
+                originalPrice: 2999, 
+                discountedPrice: 799, 
+                description: "A pair of comfortable and stylish sneakers for daily wear.",
+                imageUrl: "https://th.bing.com/th/id/R.3005658b78eeee3657458109e7c231f5?rik=awd3zPiQK%2fhXxg&riu=http%3a%2f%2fd3nt9em9l1urz8.cloudfront.net%2fmedia%2fcatalog%2fproduct%2fcache%2f3%2fimage%2f1100x%2f040ec09b1e35df139433887a97daa66f%2fj%2fo%2fjocz8659-100-2.jpg&ehk=RW6eNfU%2fYfw68TXLVdkQnyZPoXV%2fpgdGNaLruCgqkuw%3d&risl=&pid=ImgRaw&r=0" 
+            },
+            { 
+                id: 2, 
+                name: "Casual Shoes", 
+                originalPrice: 1999, 
+                discountedPrice: 590, 
+                description: "Elegant loafers for casual outings and semi-formal occasions.",
+                imageUrl: "https://fausto.in/cdn/shop/products/FST_FOBWC-1503_GOLDEN_1-1_MOOD_6611f676-23f5-4eb0-bd7b-c527c4123b70_400x.jpg?v=1679576984" 
+            },
+            { 
+                id: 3, 
+                name: "Air Jordan", 
+                originalPrice:999, 
+                discountedPrice: 399, 
+                description: "Durable and lightweight shoes for jogging and running.",
+                imageUrl: "https://kaarastore.in/wp-content/uploads/2022/12/Air-Jordan-4-Black-Cat-CU1110-010-2-1.webp" 
+            },
+            { 
+                id: 4, 
+                name: "Elegant Flats", 
+                originalPrice: 1499, 
+                discountedPrice: 499, 
+                description: "Chic flats with a sleek design, perfect for everyday use.",
+                imageUrl: "https://images-cdn.ubuy.co.in/65734b8c04c4eb4ae70f7786-sannax-mens-walking-shoes-workout-tennis.jpg" 
+            }
+            
+            
+        ];
+
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        // Render products
+        function renderProducts(productList) {
+            const productListContainer = document.getElementById("product-list");
+            productListContainer.innerHTML = productList.map(product => `
+                <div class="product-card" onclick="viewProductDetails(${product.id})">
+                    <img src="${product.imageUrl}" alt="${product.name}">
+                    <div class="details">
+                        <h3>${product.name}</h3>
+                        <p class="original-price">₹${product.originalPrice}</p>
+                        <p class="discounted-price">₹${product.discountedPrice}</p>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        // View Product Details
+        function viewProductDetails(productId) {
+            const product = products.find(p => p.id === productId);
+            localStorage.setItem("productDetails", JSON.stringify(product));
+            window.location.href = "product-details.html";
+        }
+
+        // Update cart count
+        function updateCartCount() {
+            document.getElementById("cart-count").textContent = cart.length;
+        }
+
+        // Search functionality
+        function searchProducts() {
+            const searchTerm = document.getElementById("search-bar").value.toLowerCase();
+            const filteredProducts = products.filter(product => 
+                product.name.toLowerCase().includes(searchTerm)
+            );
+
+            if (filteredProducts.length > 0) {
+                renderProducts(filteredProducts);
+            } else {
+                document.getElementById("product-list").innerHTML = `<p>No products found matching "${searchTerm}".</p>`;
+            }
+        }
+
+        // Attach search function to search bar
+        document.getElementById("search-bar").addEventListener("input", searchProducts);
+
+        // Initial Setup
+        updateCartCount();
+        renderProducts(products);
+    </script>
+</body>
+</html>

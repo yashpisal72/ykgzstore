@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YKGZ STORE - Shop Now</title>
+    <style>
+        /* General styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #0d0d0e;
+            color: rgb(253, 134, 31);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header button {
+            background-color: rgb(253, 134, 31);
+            color: #0d0d0e;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        header button:hover {
+            background-color: #ffa24c;
+        }
+
+        main {
+            padding:0rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .product-card {
+            background-color: white;
+            border: 3px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .product-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .cart-container {
+            margin: 2rem 0;
+            background-color: white;
+            padding: 0rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2rem;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .cart-item img {
+            width: 150px;
+            height: 150px;
+            border-radius: 8px;
+            margin-right: 1rem;
+        }
+
+        .cart-item h4 {
+            margin: 0;
+            font-size: 2.5rem;
+            flex-grow: 1;
+        }
+
+        .cart-item p {
+            margin: 0;
+            font-weight: bold;
+            font-size: 2.5rem;
+            padding-left: 2%;
+            color: rgba(255, 0, 0, 0.961);
+        }
+
+        .remove-button {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.3rem;
+            padding-left: 0.3rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .remove-button:hover {
+            background-color: darkred;
+        }
+
+        #cart-total {
+            text-align: center;
+            font-size: 2.2rem;
+            margin: 1rem 0;
+        }
+
+        #cart-total span {
+            color: rgb(253, 134, 31);
+        }
+
+        #buy-now {
+            display: block;
+            width: 100%;
+            background-color: rgb(253, 134, 31);
+            color: #0d0d0e;
+            border: none;
+            padding: 1rem;
+            font-size: 1rem;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #buy-now:hover {
+            background-color: #ffa24c;
+        }
+
+        .delivery-charges {
+            font-size: 1.9rem;
+            text-align: center;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>YKGZ STORE</h1>
+        <button id="cart-button">Cart (<span id="cart-count">0</span>)</button>
+    </header>
+
+    <!-- Main Content -->
+    <main id="product-list"></main>
+
+    <!-- Cart Section -->
+    <div class="cart-container" id="cart-container">
+        <h2>Your Cart</h2>
+        <div id="cart-items"></div>
+        <div id="cart-total">Total: ₹<span>0</span> (inclusive of GST)</div>
+        <div class="delivery-charges">Delivery Charges: Free</div>
+        <button id="buy-now" onclick="redirectToPayment()">Buy Now</button>
+    </div>
+
+    <script>
+        // Sample products array
+        const products = [
+          
+        ];
+
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        function updateCartCount() {
+            document.getElementById("cart-count").textContent = cart.length;
+        }
+
+        function renderProducts() {
+            const productList = document.getElementById("product-list");
+            productList.innerHTML = "";
+            products.forEach(product => {
+                const card = document.createElement("div");
+                card.classList.add("product-card");
+                card.innerHTML = `
+                    <img src="${product.imageUrl}" alt="${product.name}">
+                    <h3>${product.name}</h3>
+                    <p>₹${product.price}</p>
+                    <button onclick="addToCart(${product.id})">Add to Cart</button>
+                `;
+                productList.appendChild(card);
+            });
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    imageUrl: product.imageUrl
+                });
+                localStorage.setItem("cart", JSON.stringify(cart));
+                updateCartCount();
+                renderCart();
+            } else {
+                console.error("Product not found!");
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            localStorage.setItem("cart", JSON.stringify(cart));
+            updateCartCount();
+            renderCart();
+        }
+
+        function renderCart() {
+            const cartItems = document.getElementById("cart-items");
+            cartItems.innerHTML = "";
+
+            let total = 0;
+            cart.forEach((item, index) => {
+                total += item.price;
+                cartItems.innerHTML += `
+                    <div class="cart-item">
+                        <img src="${item.imageUrl}" alt="${item.name}">
+                        <h4>${item.name}</h4>
+                        <p>₹${item.price}</p>
+                        <button class="remove-button" onclick="removeFromCart(${index})">X</button>
+                    </div>
+                `;
+            });
+
+            document.getElementById("cart-total").innerHTML = `Total: ₹<span>${total}</span> (inclusive of GST)`;
+        }
+
+        function redirectToPayment() {
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+            localStorage.setItem("cart", JSON.stringify(cart));
+            window.location.href = "checkout.html";
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            updateCartCount();
+            renderProducts();
+            renderCart();
+        });
+    </script>
+</body>
+</html>

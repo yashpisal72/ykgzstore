@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - YKGZ STORE</title>
+    <style>
+        /* Styles for the page */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #070707, #f9f7f7);
+            color: #333;
+        }
+        header {
+            background-color: #0d0d0e;
+            color: rgb(253, 134, 31);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        header .back-arrow {
+            font-size: 2rem;
+            margin-right: 1rem;
+            cursor: pointer;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+            text-align: center;
+            flex: 1;
+        }
+        main {
+            padding: 7rem 1rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+        .order-confirmation {
+            width: 90%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 8px 10px rgba(0, 0, 0, 0.2);
+        }
+        .order-summary {
+            font-size: 1.2rem;
+            margin-top: 2rem;
+        }
+        .order-summary p {
+            margin: 1rem 0;
+        }
+        .total {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #ff5722;
+        }
+        .address {
+            font-size: 1.1rem;
+            color: #555;
+        }
+        .order-summary button {
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            margin-top: 2rem;
+        }
+        .order-summary button:hover {
+            background-color: #2874f0;
+        }
+        .tracking-container {
+            margin-top: 2rem;
+            padding: 1rem;
+            border-radius: 5px;
+            background-color: #f1f1f1;
+        }
+        .tracking-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            position: relative;
+            padding: 1rem;
+        }
+        .tracking-line {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background-color: #ccc;
+            top: 50%;
+            left: 0;
+            z-index: 1;
+        }
+        .step {
+            position: relative;
+            background-color: #ccc;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            font-size: 1rem;
+            color: white;
+            transition: background 0.3s;
+        }
+        .step.active {
+            background-color: #ff5722;
+        }
+        .step-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #555;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <span class="back-arrow" onclick="goBack()">←</span>
+        <h1>Order Confirmation</h1>
+    </header>
+
+    <main>
+        <div class="order-confirmation">
+            <h2>Thank You for Your Order!</h2>
+            <p>Your order has been successfully placed.</p>
+
+            <div class="order-summary">
+                <p><strong>Order Number:</strong> <span id="order-id"></span></p>
+                <p><strong>Items Ordered:</strong></p>
+                <ul id="item-list"></ul>
+                <p class="total">Total: ₹<span id="order-total"></span></p>
+                <p class="address"><strong>Shipping Address:</strong> <span id="order-address"></span></p>
+                <button onclick="goBack()">Back to Shop</button>
+            </div>
+
+            <div class="tracking-container">
+                <h3>Order Tracking</h3>
+                <div class="tracking-steps">
+                    <div class="tracking-line"></div>
+                    <div class="step active" id="step1">✔</div>
+                    <div class="step" id="step2">2</div>
+                    <div class="step" id="step3">3</div>
+                    <div class="step" id="step4">4</div>
+                </div>
+                <div class="step-labels">
+                    <span>Processing</span>
+                    <span>Shipped</span>
+                    <span>Out for Delivery</span>
+                    <span>Delivered</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB7t0WZigTQ2uMxy4_rvnF5fOx7ks-cpdo",
+    authDomain: "ykgzdata.firebaseapp.com",
+    databaseURL: "https://ykgzdata-default-rtdb.firebaseio.com",
+    projectId: "ykgzdata",
+    storageBucket: "ykgzdata.firebasestorage.app",
+    messagingSenderId: "416337819818",
+    appId: "1:416337819818:web:12db1acb8c5d93f47a78d3"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+
+        // Function to place an order and save it to Firebase
+        function placeOrder() {
+            const orderDetails = JSON.parse(localStorage.getItem("orderDetails"));
+            if (!orderDetails) {
+                alert("Order details not found.");
+                return;
+            }
+
+            // Get current logged-in user
+            const user = auth.currentUser;
+            if (!user) {
+                alert("You need to be logged in to place an order.");
+                return;
+            }
+
+            // Prepare the order data
+            const orderId = orderDetails.orderId;
+            const items = orderDetails.items;
+            const totalPrice = orderDetails.total;
+            const shippingAddress = orderDetails.address;
+            const orderDate = new Date().toLocaleString();
+
+            // Structure the order data
+            const newOrder = {
+                orderId: orderId,
+                items: items,
+                totalPrice: totalPrice,
+                shippingAddress: shippingAddress,
+                orderDate: orderDate,
+                status: "Processing"  // Set initial status to "Processing"
+            };
+
+            // Store the order in the user's Firebase profile
+            const userRef = ref(database, 'users/' + user.uid + '/orders/' + orderId);
+
+            // Update the orders section in Firebase for this user
+            set(userRef, newOrder)
+                .then(() => {
+                    alert("Your order has been placed successfully and saved to your account.");
+                    window.location.href = "order-confirmation.html"; // Redirect to order confirmation page
+                })
+                .catch((error) => {
+                    alert("Error placing order: " + error.message);
+                });
+        }
+
+        // Fetch the order details from Firebase when the page loads
+        function renderOrderDetails() {
+            const user = auth.currentUser;
+            if (!user) {
+                alert("Please log in to view your order.");
+                return;
+            }
+
+            const orderId = new URLSearchParams(window.location.search).get('orderId');
+            if (!orderId) {
+                alert("Order ID not found.");
+                return;
+            }
+
+            const orderRef = ref(database, 'users/' + user.uid + '/orders/' + orderId);
+            get(orderRef).then(snapshot => {
+                const orderData = snapshot.val();
+                if (orderData) {
+                    document.getElementById("order-id").textContent = orderData.orderId;
+                    document.getElementById("order-total").textContent = orderData.totalPrice;
+                    document.getElementById("order-address").textContent = orderData.shippingAddress;
+
+                    const itemList = document.getElementById("item-list");
+                    orderData.items.forEach(item => {
+                        const li = document.createElement("li");
+                        li.textContent = `${item.name} - ₹${item.price}`;
+                        itemList.appendChild(li);
+                    });
+                }
+            }).catch(error => {
+                alert("Error loading order details: " + error.message);
+            });
+        }
+
+        function goBack() {
+            window.location.href = "index.html";  // Navigate to the home page or shop page
+        }
+
+        // Load order details on page load
+        window.onload = renderOrderDetails;
+    </script>
+</body>
+</html>

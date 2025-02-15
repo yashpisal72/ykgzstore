@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - YKGZ STORE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #0d0d0e;
+            color: rgb(253, 134, 31);
+            padding: 1rem;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .section {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .order-summary {
+            margin-top: 20px;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .order-item img {
+            width: 80px;
+            height: 80px;
+            border-radius: 5px;
+        }
+
+        .order-item h4 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .order-item p {
+            margin: 0;
+            font-size: 1rem;
+            color: red;
+        }
+
+        #total-price {
+            font-size: 1.4rem;
+            color: rgb(253, 134, 31);
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        .continue-btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.2rem;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .disabled {
+            background-color: grey;
+            color: white;
+            cursor: not-allowed;
+        }
+
+        .enabled {
+            background-color: rgb(253, 134, 31);
+            color: #0d0d0e;
+        }
+
+        .enabled:hover {
+            background-color: #ffa24c;
+        }
+    </style>
+</head>
+<body>
+
+    <header>Checkout - YKGZ STORE</header>
+
+    <div class="container">
+        <!-- Login & Basic Address Section -->
+        <div class="section">
+            <h2>Login & Delivery Details</h2>
+            <p><strong>Name:</strong> <span id="user-name">Not Provided</span></p>
+            <p><strong>Phone Number:</strong> <span id="user-phone">Not Provided</span></p>
+            <button onclick="editUserDetails()">Edit</button>
+            <button onclick="toggleAddress()">Select Address</button>
+
+            <!-- Detailed Address (Hidden Initially) -->
+            <div id="address-section" class="hidden">
+                <p><strong>Street Address:</strong> <span id="user-street">Not Provided</span></p>
+                <p><strong>Area:</strong> <span id="user-area">Not Provided</span></p>
+                <p><strong>Landmark:</strong> <span id="user-landmark">Not Provided</span></p>
+                <p><strong>City:</strong> <span id="user-city">Not Provided</span></p>
+                <p><strong>Pincode:</strong> <span id="user-pincode">Not Provided</span></p>
+                <button onclick="editDetails()">Edit Address</button>
+            </div>
+        </div>
+
+        <!-- Order Summary Section -->
+        <div class="section order-summary">
+            <h2>Order Summary</h2>
+            <div id="order-items"></div>
+            <p id="total-price">Total Price: ₹0</p>
+        </div>
+
+        <!-- Continue Button -->
+        <button id="continue-btn" class="continue-btn disabled" onclick="proceedToPayment()">Continue</button>
+    </div>
+
+    <script>
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        let userName = localStorage.getItem("userName") || null;
+        let userPhone = localStorage.getItem("userPhone") || null;
+        let userStreet = localStorage.getItem("userStreet") || null;
+        let userArea = localStorage.getItem("userArea") || null;
+        let userLandmark = localStorage.getItem("userLandmark") || null;
+        let userCity = localStorage.getItem("userCity") || null;
+        let userPincode = localStorage.getItem("userPincode") || null;
+
+        function displayOrderSummary() {
+            const orderItemsContainer = document.getElementById("order-items");
+            orderItemsContainer.innerHTML = "";
+            let totalPrice = 0;
+
+            if (cart.length === 0) {
+                orderItemsContainer.innerHTML = "<p>Your cart is empty.</p>";
+            } else {
+                cart.forEach(item => {
+                    totalPrice += item.price;
+                    orderItemsContainer.innerHTML += `
+                        <div class="order-item">
+                            <img src="${item.imageUrl}" alt="${item.name}">
+                            <h4>${item.name}</h4>
+                            <p>₹${item.price}</p>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById("total-price").innerHTML = `Total Price: ₹${totalPrice}`;
+        }
+
+        function checkConditions() {
+            const continueBtn = document.getElementById("continue-btn");
+
+            if (userName && userPhone && userStreet && userArea && userLandmark && userCity && userPincode && cart.length > 0) {
+                continueBtn.classList.remove("disabled");
+                continueBtn.classList.add("enabled");
+                continueBtn.disabled = false;
+            } else {
+                continueBtn.classList.remove("enabled");
+                continueBtn.classList.add("disabled");
+                continueBtn.disabled = true;
+            }
+        }
+
+        function editUserDetails() {
+            const newName = prompt("Enter your full name:", userName || "");
+            const newPhone = prompt("Enter your phone number:", userPhone || "");
+
+            if (newName && newPhone) {
+                localStorage.setItem("userName", newName);
+                localStorage.setItem("userPhone", newPhone);
+
+                userName = newName;
+                userPhone = newPhone;
+
+                updateUserInfo();
+                checkConditions();
+            }
+        }
+
+        function editDetails() {
+            const newStreet = prompt("Enter your street address:");
+            const newArea = prompt("Enter your area:");
+            const newLandmark = prompt("Enter a nearby landmark:");
+            const newCity = prompt("Enter your city:");
+            const newPincode = prompt("Enter your pincode:");
+
+            if (newStreet && newArea && newLandmark && newCity && newPincode) {
+                localStorage.setItem("userStreet", newStreet);
+                localStorage.setItem("userArea", newArea);
+                localStorage.setItem("userLandmark", newLandmark);
+                localStorage.setItem("userCity", newCity);
+                localStorage.setItem("userPincode", newPincode);
+
+                userStreet = newStreet;
+                userArea = newArea;
+                userLandmark = newLandmark;
+                userCity = newCity;
+                userPincode = newPincode;
+
+                updateUserInfo();
+                checkConditions();
+            }
+        }
+
+        function updateUserInfo() {
+            document.getElementById("user-name").innerText = userName || "Not Provided";
+            document.getElementById("user-phone").innerText = userPhone || "Not Provided";
+            document.getElementById("user-street").innerText = userStreet || "Not Provided";
+            document.getElementById("user-area").innerText = userArea || "Not Provided";
+            document.getElementById("user-landmark").innerText = userLandmark || "Not Provided";
+            document.getElementById("user-city").innerText = userCity || "Not Provided";
+            document.getElementById("user-pincode").innerText = userPincode || "Not Provided";
+        }
+
+        function toggleAddress() {
+            document.getElementById("address-section").classList.toggle("hidden");
+        }
+
+        function proceedToPayment() {
+            if (document.getElementById("continue-btn").disabled) return;
+            window.location.href = "payment.html";
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            updateUserInfo();
+            displayOrderSummary();
+            checkConditions();
+        });
+    </script>
+
+</body>
+</html>

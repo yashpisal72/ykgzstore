@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - YKGZ STORE</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script src="firebase-config.js"></script> <!-- Your Firebase Config -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        .checkout-container {
+            width: 60%;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            border-radius: 10px;
+        }
+        .section {
+            background: #2a2a2a;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        button {
+            background: grey;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:disabled {
+            background: grey;
+            cursor: not-allowed;
+        }
+        button.active {
+            background: orange;
+        }
+        .price-details {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="checkout-container">
+        <!-- LOGIN SECTION -->
+        <div class="section">
+            <h2>1 LOGIN ✓</h2>
+            <p><strong id="user-name">Loading...</strong> <span id="user-phone"></span></p>
+            <button id="change-login">CHANGE</button>
+        </div>
+
+        <!-- DELIVERY ADDRESS -->
+        <div class="section">
+            <h2>2 DELIVERY ADDRESS ✓</h2>
+            <p><strong id="user-address">No address added</strong></p>
+            <button id="change-address">CHANGE</button>
+        </div>
+
+        <!-- ORDER SUMMARY -->
+        <div class="section">
+            <h2>3 ORDER SUMMARY</h2>
+            <div id="cart-items"></div>
+        </div>
+
+        <!-- PRICE DETAILS -->
+        <div class="price-details">
+            <h3>PRICE DETAILS</h3>
+            <p>Price (<span id="item-count">0</span> items): ₹<span id="total-price">0</span></p>
+            <p>Delivery Charges: <span id="delivery-charge">₹40</span></p>
+            <p>Packaging Charge: ₹<span id="packaging-charge">59</span></p>
+            <h3>Total Payable: ₹<span id="total-payable">0</span></h3>
+        </div>
+
+        <!-- CONTINUE BUTTON -->
+        <button id="continue-btn" disabled>CONTINUE</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let userLoggedIn = false;
+            let addressFilled = false;
+            let cartNotEmpty = false;
+
+            const continueBtn = document.getElementById("continue-btn");
+
+            // Firebase Auth Check
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    document.getElementById("user-name").innerText = user.displayName || "User";
+                    document.getElementById("user-phone").innerText = user.phoneNumber || "No phone number";
+                    userLoggedIn = !!user.phoneNumber;
+                    checkConditions();
+                } else {
+                    window.location.href = "loginandsignup.html";
+                }
+            });
+
+            // Fetch Address from Firebase
+            firebase.firestore().collection("users").doc(firebase.auth().currentUser?.uid)
+                .get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        document.getElementById("user-address").innerText = userData.address || "No address added";
+                        addressFilled = !!userData.address;
+                        checkConditions();
+                    }
+                });
+
+            // Fetch Cart Items
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+            const cartItemsDiv = document.getElementById("cart-items");
+
+            if (cart.length > 0) {
+                cartNotEmpty = true;
+                cart.forEach((item) => {
+                    let div = document.createElement("div");
+                    div.innerHTML = `<p><strong>${item.name}</strong> - ₹${item.price}</p>`;
+                    cartItemsDiv.appendChild(div);
+                });
+            } else {
+                cartItemsDiv.innerHTML = "<p>Your cart is empty.</p>";
+            }
+
+            // Calculate Prices
+            let totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+            let deliveryCharge = totalPrice > 500 ? 0 : 40;
+            let packagingCharge = 59;
+            let totalPayable = totalPrice + deliveryCharge + packagingCharge;
+
+            document.getElementById("item-count").innerText = cart.length;
+            document.getElementById("total-price").innerText = totalPrice;
+            document.getElementById("delivery-charge").innerText = deliveryCharge === 0 ? "FREE" : `₹${deliveryCharge}`;
+            document.getElementById("total-payable").innerText = totalPayable;
+
+            // Check Conditions & Update Button
+            function checkConditions() {
+                if (userLoggedIn && addressFilled && cartNotEmpty) {
+                    continueBtn.disabled = false;
+                    continueBtn.classList.add("active");
+                } else {
+                    continueBtn.disabled = true;
+                    continueBtn.classList.remove("active");
+                }
+            }
+
+            // Redirect on Click
+            continueBtn.addEventListener("click", function () {
+                if (!continueBtn.disabled) {
+                    window.location.href = "payment.html";
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

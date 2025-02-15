@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - YKGZ STORE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f9f7f7, #070707);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .dashboard-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 90%;
+        }
+
+        .dashboard-container h2 {
+            color: #2d7dff;
+            margin-bottom: 1rem;
+        }
+
+        .dashboard-container .user-info {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .dashboard-container .section {
+            margin-top: 2rem;
+        }
+
+        .dashboard-container button {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .dashboard-container button:hover {
+            background-color: #2874f0;
+        }
+
+        .order {
+            background-color: #444;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        .order h3 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .order p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h2>Welcome to your Dashboard, <span id="user-name">Loading...</span>!</h2>
+        <div class="user-info">
+            <p><strong>Email:</strong> <span id="user-email">Loading...</span></p>
+            <p><strong>Phone:</strong> <span id="user-phone">Loading...</span></p>
+        </div>
+
+        <div class="section">
+            <h3>Your Orders</h3>
+            <div id="order-list">Loading orders...</div> <!-- Orders will be dynamically inserted here -->
+        </div>
+
+        <div class="section">
+            <h3>Saved Items</h3>
+            <p>Display saved items here...</p>
+        </div>
+
+        <div class="section">
+            <button id="logout-btn">Logout</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB7t0WZigTQ2uMxy4_rvnF5fOx7ks-cpdo",
+            authDomain: "ykgzdata.firebaseapp.com",
+            databaseURL: "https://ykgzdata-default-rtdb.firebaseio.com",
+            projectId: "ykgzdata",
+            storageBucket: "ykgzdata.firebasestorage.app",
+            messagingSenderId: "416337819818",
+            appId: "1:416337819818:web:12db1acb8c5d93f47a78d3"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+
+        // Check if the user is logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in, fetch their details from the database
+                const userId = user.uid;
+                const userRef = ref(database, 'users/' + userId);
+
+                get(userRef).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+                        // Update the UI with fetched user data
+                        document.getElementById("user-name").innerText = userData.name || 'No name found';
+                        document.getElementById("user-phone").innerText = userData.phone || 'No phone number found';
+                        document.getElementById("user-email").innerText = userData.email || 'No email found';
+
+                        // Fetch and display orders
+                        const orders = userData.orders;
+                        let orderHtml = '';
+                        if (orders) {
+                            for (const orderId in orders) {
+                                const order = orders[orderId];
+                                orderHtml += `
+                                    <div class="order">
+                                        <h3>Product: ${order.product}</h3>
+                                        <p>Price: $${order.price}</p>
+                                        <p>Status: ${order.status}</p>
+                                        <p>Date: ${order.date}</p>
+                                    </div>
+                                `;
+                            }
+                        } else {
+                            orderHtml = '<p>No orders found.</p>';
+                        }
+                        document.getElementById("order-list").innerHTML = orderHtml;
+
+                    } else {
+                        console.log("No data available for this user.");
+                    }
+                }).catch((error) => {
+                    console.error("Error getting user data:", error);
+                });
+
+            } else {
+                // User is not logged in, redirect to login page
+                window.location.href = "login.html";
+            }
+        });
+
+        // Logout function
+        document.getElementById("logout-btn").addEventListener("click", () => {
+            signOut(auth).then(() => {
+                window.location.href = "login.html";  // Redirect to login page after logout
+            }).catch((error) => {
+                console.log("Error logging out: " + error.message);
+            });
+        });
+    </script>
+</body>
+</html>

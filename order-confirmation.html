@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YKGZ STORE - Order Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .order-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 600px;
+            margin: auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #333;
+        }
+        .order-details, .product-details {
+            margin: 20px 0;
+        }
+        .product-details div {
+            margin-bottom: 10px;
+        }
+        .total {
+            font-weight: bold;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            color: #fff;
+            background-color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .btn:hover {
+            background-color: #555;
+        }
+        #confirmOrder {
+            background-color: #28a745;
+            margin-top: 15px;
+        }
+        #confirmOrder:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+<div class="order-container">
+    <h2>Order Confirmation</h2>
+
+    <!-- Shipping Address Input -->
+    <div class="order-details">
+        <p><strong>Shipping Address:</strong></p>
+        <textarea id="shippingAddressInput" rows="3" placeholder="Enter your shipping address here..." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;"></textarea>
+    </div>
+
+    <h3>Items Ordered:</h3>
+    <div class="product-details" id="productDetails"></div>
+
+    <p class="total">Total: $<span id="totalAmount"></span></p>
+
+    <button id="confirmOrder" class="btn">Confirm Order</button>
+    <a href="shop.html" class="btn">Back to Shop</a>
+</div>
+
+<script type="module">
+    // Import Firebase SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+    import { getDatabase, ref, set, push } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyB7t0WZigTQ2uMxy4_rvnF5fOx7ks-cpdo",
+        authDomain: "ykgzdata.firebaseapp.com",
+        databaseURL: "https://ykgzdata-default-rtdb.firebaseio.com",
+        projectId: "ykgzdata",
+        storageBucket: "ykgzdata.appspot.com",
+        messagingSenderId: "416337819818",
+        appId: "1:416337819818:web:12db1acb8c5d93f47a78d3"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const database = getDatabase(app);
+
+    let currentUser; // Hold current user globally
+    let cartData;    // Hold cart data globally
+
+    // Display Cart Items on Page Load
+    function displayCartItems(items) {
+        const productDetails = document.getElementById('productDetails');
+        productDetails.innerHTML = ''; // Clear existing items
+
+        let totalAmount = 0;
+        items.forEach(item => {
+            const itemDiv = document.createElement('div');
+            itemDiv.innerHTML = `
+                <strong>${item.name}</strong> - $${item.price} x ${item.quantity} 
+                <br>Status: <em>Pending</em>
+            `;
+            productDetails.appendChild(itemDiv);
+            totalAmount += parseFloat(item.price) * item.quantity;
+        });
+
+        document.getElementById('totalAmount').innerText = totalAmount.toFixed(2);
+    }
+
+    // Function to Save Order in Firebase
+    function saveOrder(userId, orderData) {
+        const orderRef = ref(database, 'users/' + userId + '/orders');
+        const newOrderRef = push(orderRef); // Generate unique order ID
+
+        set(newOrderRef, orderData)
+            .then(() => {
+                console.log('Order saved successfully!');
+                alert('Order confirmed successfully!');
+                localStorage.removeItem('cart'); // Clear cart after order is placed
+                window.location.href = "shop.html"; // Redirect to shop
+            })
+            .catch((error) => {
+                console.error('Error saving order:', error);
+            });
+    }
+
+    // Confirm Order Button Click
+    document.getElementById('confirmOrder').addEventListener('click', () => {
+        const shippingAddress = document.getElementById('shippingAddressInput').value.trim();
+
+        if (!shippingAddress) {
+            alert("Please enter a shipping address!");
+            return;
+        }
+
+        const orderData = {
+            name: currentUser.displayName || "YKGZ Customer",
+            email: currentUser.email,
+            phone: currentUser.phoneNumber || "N/A",
+            shippingAddress: shippingAddress,
+            items: cartData.map(item => ({
+                productName: item.name,
+                productPrice: item.price,
+                quantity: item.quantity,
+                status: "pending" // Initial order status
+            })),
+            totalAmount: document.getElementById('totalAmount').innerText
+        };
+
+        saveOrder(currentUser.uid, orderData);
+    });
+
+    // Authenticate User and Load Cart Data
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentUser = user;
+            cartData = JSON.parse(localStorage.getItem('cart'));
+
+            if (cartData && cartData.length > 0) {
+                displayCartItems(cartData);  // Display Cart Items
+            } else {
+                alert("Your cart is empty! Redirecting to shop...");
+                window.location.href = "shop.html";
+            }
+        } else {
+            window.location.href = "loginandsignup.html";  // Redirect to login if not authenticated
+        }
+    });
+
+</script>
+
+</body>
+</html>

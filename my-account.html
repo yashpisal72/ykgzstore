@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - YKGZ STORE</title>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB7t0WZigTQ2uMxy4_rvnF5fOx7ks-cpdo",
+            authDomain: "ykgzdata.firebaseapp.com",
+            databaseURL: "https://ykgzdata-default-rtdb.firebaseio.com",
+            projectId: "ykgzdata",
+            storageBucket: "ykgzdata.appspot.com",
+            messagingSenderId: "416337819818",
+            appId: "1:416337819818:web:12db1acb8c5d93f47a78d3"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // Wait for DOM to load before running code
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get user first name from localStorage
+            const userFirstName = localStorage.getItem("userFirstName");
+            document.getElementById('user-name').textContent = `Hi ${userFirstName}!`;
+
+            // Fetch user data from Firebase
+            const userId = auth.currentUser?.uid;
+            if (userId) {
+                const userRef = ref(db, 'users/' + userId);
+                get(userRef).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+                        document.getElementById('user-email').textContent = `Email: ${userData.email}`;
+                        document.getElementById('user-phone').textContent = `Phone: ${userData.phone}`;
+                        document.getElementById('user-address').textContent = `Address: ${userData.address || 'Not available'}`;
+                    }
+                });
+            } else {
+                alert('User not authenticated!');
+                window.location.href = 'login.html';
+            }
+
+            // Logout functionality
+            document.getElementById('logout').addEventListener('click', () => {
+                auth.signOut().then(() => {
+                    localStorage.removeItem("userFirstName");
+                    window.location.href = 'login.html';
+                }).catch((error) => {
+                    alert(`Error logging out: ${error.message}`);
+                });
+            });
+        });
+    </script>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+        }
+
+        .container {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 2rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: #2d7dff;
+            color: white;
+            padding: 1rem;
+            width: 25%;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h2 {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            font-size: 1.1rem;
+            text-decoration: none;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #fff;
+            transition: background 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: #1c5a8a;
+            padding-left: 10px;
+        }
+
+        /* Main Content */
+        .main-content {
+            width: 70%;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: #2d7dff;
+            font-size: 2rem;
+        }
+
+        .header button {
+            background: #ff5722;
+            color: white;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        .header button:hover {
+            background: #2874f0;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+        }
+
+        .section h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #2d7dff;
+        }
+
+        .section p {
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .order-summary, .saved-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .order-item, .saved-item {
+            background: #f9f9f9;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                margin-bottom: 2rem;
+            }
+
+            .main-content {
+                width: 100%;
+            }
+
+            .order-summary, .saved-items {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>My Account</h2>
+            <a href="#">Dashboard</a>
+            <a href="#">Orders</a>
+            <a href="#">Wishlist</a>
+            <a href="#">Profile & Settings</a>
+            <a href="#">Payments</a>
+            <a href="#">Saved Addresses</a>
+            <a href="#" id="logout">Logout</a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1 id="user-name">Hi User!</h1>
+                <button id="logout">Logout</button>
+            </div>
+
+            <div class="section">
+                <h3>Your Information</h3>
+                <p id="user-email">Email: </p>
+                <p id="user-phone">Phone: </p>
+                <p id="user-address">Address: </p>
+            </div>
+
+            <div class="section order-summary">
+                <h3>Order Summary</h3>
+                <div class="order-item">
+                    <p><strong>Order ID:</strong> #12345</p>
+                    <p><strong>Status:</strong> Pending</p>
+                    <p><strong>Total Price:</strong> $99.99</p>
+                </div>
+                <div class="order-item">
+                    <p><strong>Order ID:</strong> #12346</p>
+                    <p><strong>Status:</strong> Delivered</p>
+                    <p><strong>Total Price:</strong> $59.99</p>
+                </div>
+            </div>
+
+            <div class="section saved-items">
+                <h3>Your Wishlist</h3>
+                <div class="saved-item">
+                    <p><strong>Product:</strong> Product 1</p>
+                    <p><strong>Price:</strong> $49.99</p>
+                </div>
+                <div class="saved-item">
+                    <p><strong>Product:</strong> Product 2</p>
+                    <p><strong>Price:</strong> $29.99</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
